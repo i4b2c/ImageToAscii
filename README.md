@@ -1,10 +1,10 @@
 # ImageToAscii
 
-**ImageToAscii** é um script Python que converte qualquer imagem em arte ASCII. Ele utiliza a biblioteca `Pillow` para processar imagens e mapeá-las para um conjunto de caracteres ASCII com base na intensidade de tons de cinza.
+**ImageToAscii** is a Python script that converts any image into ASCII art. It uses the `Pillow` library to process images and map their pixel intensities to an ASCII character set.
 
-## Como Funciona
+## How It Works
 
-1. **Redimensionamento da Imagem**: A imagem é redimensionada proporcionalmente para se adequar à largura desejada.
-2. **Conversão para Tons de Cinza**: Cada pixel é convertido para um valor de intensidade em escala de cinza.
-3. **Mapeamento para ASCII**: Os valores de intensidade são mapeados para um conjunto de caracteres ASCII (do mais escuro para o mais claro).
-4. **Saída**: O resultado é salvo em um arquivo `.txt` e pode ser exibido no console.
+1. **Image Resizing**: The image is resized proportionally to fit the desired width.
+2. **Grayscale Conversion**: Each pixel is converted to a grayscale intensity value.
+3. **ASCII Mapping**: The intensity values are mapped to a set of ASCII characters (from darkest to lightest).
+4. **Output**: The result is saved as a `.txt` file and can optionally be displayed in the console.
