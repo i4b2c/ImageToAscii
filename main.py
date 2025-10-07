@@ -1,18 +1,11 @@
 import PIL.Image
 
-# ASCII character set to map pixel values (from light to dark)
-ASCII_CHARS = " .,o'-~+i:;?>='*^0#&%$@"
+# Mais caracteres para melhor definição (do claro ao escuro)
+ASCII_CHARS = " .'`^\",:;Il!i><~+_-?][}{1)(|\\/tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$"
 
 def resize_image(image, new_width=100):
     """
-    Resize the image while maintaining aspect ratio.
-    
-    Args:
-        image (PIL.Image): The input image.
-        new_width (int): The desired width of the output image.
-    
-    Returns:
-        PIL.Image: The resized image.
+    Redimensiona a imagem mantendo a proporção.
     """
     width, height = image.size
     aspect_ratio = height / width
@@ -21,40 +14,13 @@ def resize_image(image, new_width=100):
 
 def gray_image(image):
     """
-    Convert the image to grayscale.
-    
-    Args:
-        image (PIL.Image): The input image.
-    
-    Returns:
-        PIL.Image: Grayscale image.
+    Converte a imagem para escala de cinza.
     """
     return image.convert("L")
 
-def pixels_to_ascii(image):
+def convert_image_to_ascii(path, new_width=100, colored=True):
     """
-    Map each pixel value to an ASCII character based on intensity.
-    
-    Args:
-        image (PIL.Image): Grayscale image.
-    
-    Returns:
-        str: A string of ASCII characters representing the image.
-    """
-    pixels = image.getdata()
-    scale_factor = 256 / len(ASCII_CHARS)
-    return "".join([ASCII_CHARS[int(pixel // scale_factor)] for pixel in pixels])
-
-def convert_image_to_ascii(path, new_width=100):
-    """
-    Convert an image to ASCII art.
-    
-    Args:
-        path (str): Path to the input image file.
-        new_width (int): Desired width of the ASCII art.
-    
-    Returns:
-        str: The ASCII art representation of the image.
+    Converte uma imagem em arte ASCII (mantendo a proporção original e adicionando cor RGB).
     """
     try:
         image = PIL.Image.open(path)
@@ -62,12 +28,31 @@ def convert_image_to_ascii(path, new_width=100):
         raise FileNotFoundError(f"File '{path}' not found.")
     except PIL.UnidentifiedImageError:
         raise ValueError(f"File '{path}' is not a valid image.")
-    
+
     image = resize_image(image, new_width)
-    image = gray_image(image)
-    ascii_art = pixels_to_ascii(image)
-    pixel_count = len(ascii_art)
-    return "\n".join(ascii_art[i:i+new_width] for i in range(0, pixel_count, new_width))
+    gray = gray_image(image)
+    color_img = image.convert("RGB")
+
+    pixels_gray = list(gray.getdata())
+    pixels_color = list(color_img.getdata())
+
+    scale_factor = 256 / len(ASCII_CHARS)
+    ascii_art_lines = []
+
+    for y in range(image.height):
+        line = ""
+        for x in range(image.width):
+            i = y * image.width + x
+            gray_val = pixels_gray[i]
+            r, g, b = pixels_color[i]
+            char = ASCII_CHARS[int(gray_val // scale_factor)]
+            if colored:
+                line += f"\033[38;2;{r};{g};{b}m{char}\033[0m"
+            else:
+                line += char
+        ascii_art_lines.append(line)
+
+    return "\n".join(ascii_art_lines)
 
 def main():
     path = input("Write a valid path for the image: ")
@@ -77,8 +62,11 @@ def main():
         print("Invalid width! Using default value of 100.")
         new_width = 100
 
+    color_choice = input("Show colors in console? (y/n): ").strip().lower()
+    colored = (color_choice == "y")
+
     try:
-        ascii_art = convert_image_to_ascii(path, new_width)
+        ascii_art = convert_image_to_ascii(path, new_width, colored)
     except FileNotFoundError as e:
         print(e)
         return
@@ -86,13 +74,18 @@ def main():
         print(e)
         return
 
-    output_file = "ascii_image.txt"
-    with open(output_file, "w") as f:
-        f.write(ascii_art)
+    output_file = "ascii_image_colored.txt" if colored else "ascii_image.txt"
+    with open(output_file, "w", encoding="utf-8") as f:
+        if colored:
+            import re
+            ansi_escape = re.compile(r'\x1B\[[0-?]*[ -/]*[@-~]')
+            f.write(ansi_escape.sub('', ascii_art))  # remove cores ao salvar
+        else:
+            f.write(ascii_art)
 
     print(f"ASCII art saved to '{output_file}'.")
     display = input("Display ASCII art in console? (y/n): ").strip().lower()
-    if display.lower() == "y":
+    if display == "y":
         print("\n" + ascii_art)
 
 if __name__ == "__main__":
